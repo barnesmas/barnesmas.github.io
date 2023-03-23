@@ -1,0 +1,20 @@
+---
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+## About Me
+
+### Hi, my name is Mason Barnes.
+
+My favorite things are to play with markdwon formatting.
+
+See, I can make **bold text** becase I am cool.
+```{r}
+knitr::include_graphics('../media/Allosaurus.jfif')
+```
+
+Here is [my CV](http://barnesmas.gitub.io/media/quiz3.pdf)
