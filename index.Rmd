@@ -9,3 +9,9 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 Here's my website.
 
 
+```{r}
+
+```
+
+## [About Me](http://barnesmas.github.io/about_me)
+
