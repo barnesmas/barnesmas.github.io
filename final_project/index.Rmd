@@ -1,0 +1,75 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Final Project
+
+## Dinosaur Growth Curves
+
+My goal in this project is to fit growth curves to data we have about dinosaurs. 
+The data we have are estimated ages and femur lengths, and also mass estimates. 
+```{r}
+library(tidyverse)
+library(zoo)
+library(stringr)
+
+df1 <- readxl::read_excel('./Data//Dinosaur Age vs Femur Length.xlsx')
+
+names(df1) = c('dinosaur', 'age', 'femur_length')
+
+skips <- which(df1$dinosaur %>% is.na & df1$age %>% is.na)
+
+df1 <- df1[-skips,] # removing blank rows from the data set
+
+df1$dinosaur <- na.locf(df1$dinosaur) # filling na values with specimen
+
+df1 <- df1 %>% mutate(genus = str_extract(dinosaur, "^[^\\s]+"))
+
+
+
+df2 <- readxl::read_excel('./Data/Dinosaur Age vs Mass.xlsx')
+
+names(df2) = c('dinosaur', 'age', 'mass')
+
+skips <- which(df2$dinosaur %>% is.na & df2$age %>% is.na)
+
+df2 <- df2[-skips,] # removing blank rows from the data set
+
+df2$dinosaur <- na.locf(df2$dinosaur) # filling na values with dinosaur
+
+df2 <- df2 %>% mutate(genus = str_extract(dinosaur, "^[^\\s]+"))
+```
+
+### Femur Length versus age
+```{r}
+df1 %>% #filter(genus != 'janenschia') %>% 
+ggplot(aes(x = age, y = femur_length, color = genus, group = dinosaur)) +
+  geom_line() +
+  #geom_smooth(se = FALSE) +
+  facet_wrap(~genus, scales = 'free')
+```
+
+### Estimated Mass versus age
+```{r}
+df2 %>%# filter(genus != 'Janenschia') %>% 
+  ggplot(aes(x = age, y = mass, color = genus, group = dinosaur)) +
+  geom_line() +
+  #geom_smooth(se = FALSE) +
+  facet_wrap(~genus, scales = 'free')
+```
+
+However, growth curves should have a stage of minimum growth and a tapering off.
+```{r}
+
+T.rex <- filter(df2, dinosaur =='Tyrannosaurus rex')
+
+fit <- nls(data = T.rex, mass ~ a / (1 + exp(-b*(age-c))), start = list(a = 2000, b = .3, c = 2))
+
+
+```
+
