@@ -1,5 +1,4 @@
 ---
-title: "Untitled"
 output: html_document
 ---
 
@@ -11,10 +10,9 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Dinosaur Growth Curves
 
-My goal in this project is to fit growth curves to data we have about fossilized dinosaur bones and the ages of the dinosaur at the time of death. The utility of an accurate measurement to age model would mean scientists could use it to estimate approximate ages of dinosaur specimens without having to having take histological measurements first. 
+My goal in this project is to fit growth curves to data we have about fossilized dinosaur bones and the ages of the dinosaur at the time of death. The utility of an accurate measurement to age model would mean scientists could use it to estimate approximate ages of dinosaur specimens without having to having take histological measurements first.
 
-Here's a look at several dinosaur bone measurements (mm) to age. EAch facet is a separate genus of dinosaur, and each grouping is a separate bone (if there are multiple). The curve is a moving average curve using the geom_smooth function in R.
-
+Here's a look at several dinosaur bone measurements (mm) to age. Each facet is a separate genus of dinosaur, and each grouping is a separate bone (if there are multiple). The curve is a moving average curve using the geom_smooth function in R.
 
 ```{r}
 library(tidyverse)
@@ -49,23 +47,31 @@ df2$dataset <- na.locf(df2$dataset) # filling na values with dataset
 
 df2 <- df2 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
 ```
-As you can see, there are  a wide variety of "shapes" to the growth curves of different dinosaurs.
+
 ### Bone Measurement versus Age
+
 ```{r}
 df1 %>% #filter(genus != 'janenschia') %>% 
-ggplot(aes(x = age, y = bone_dim_cm, color = genus, group = dataset)) +
+ggplot(aes(x = age, y = bone_dim_mm, color = genus, group = dataset)) +
   geom_point() +
   geom_smooth(se = FALSE) +
-  facet_wrap(~genus, scales = 'free')
+  facet_wrap(~genus, scales = 'free') +
+  labs(x = 'Bone Dimension', y = 'Age (Years)')
 ```
 
+As you can see, there are a wide variety of "shapes" to the growth curves of different dinosaurs. So what "shape" should we use to estimate dinosaur age? Instead of picking just one, I created a shiny app that allows the user to pick one of several and compare their performance in each dinosaur dataset.
+
+## [Click Here](https://mason-barnes.shinyapps.io/dino_bone_growth_app/)
+
 ### Estimated Mass versus age
+
+With information about bone dimension, we can then estimate mass based on age, and get a growth curve for the total dinosaur, but that is beyond the scope of this project.
+
 ```{r}
 df2 %>%# filter(genus != 'Janenschia') %>% 
   ggplot(aes(x = age, y = mass, color = genus, group = dataset)) +
-  geom_line() +
-  #geom_smooth(se = FALSE) +
-  facet_wrap(~genus, scales = 'free')
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_wrap(~genus, scales = 'free') +
+  labs(x = 'Age (Years)', y = 'Mass (kg)')
 ```
-
-

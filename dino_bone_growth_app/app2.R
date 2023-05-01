@@ -129,13 +129,13 @@ server <- function(input, output) {
       data.frame(
         bone_dimension = dinosaur_filtered()$bone_dimension,
         resid = dinosaur_filtered()$age - predict(model()),
-        newdata = dinosaur_filtered()$bone_dimension
-      )
+        newdata = dinosaur_filtered()$bone_dimension)
     rmse <- sqrt(mean(resid_df$resid ^ 2))
     ggplotly(
       ggplot(data = resid_df, aes(x = bone_dimension , y = resid)) +
         geom_point() +
         geom_hline(yintercept = 0) +
+        labs(x = 'Bone Dimension (mm)', y = 'Residuals') +
         annotate(
           'text',
           x = .75 * max(resid_df$bone_dimension),
