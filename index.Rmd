@@ -6,7 +6,26 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
-Here's my website.
+```{r}
+library(tidyverse)
+library(kableExtra)
+library(plotly)
+```
+
+# Mason Barnes
+
+Hello
+
+I'm Mason. I'm currently a student at Utah Valley University studying statistics. I have a passion for making discoveries by analyzing data using statistical software. I love the 
+
+<!-- Insert a picture of yourself here --> 
+
+Here's the kind of stuff I like to do:
+
+```{r}
+
+```
+
 
 
 ```{r}
@@ -14,4 +33,6 @@ Here's my website.
 ```
 
 ## [About Me](http://barnesmas.github.io/about_me)
+
+## [Final Project](http://barnesmas.github.io/final_project)
 

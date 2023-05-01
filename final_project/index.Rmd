@@ -11,65 +11,61 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Dinosaur Growth Curves
 
-My goal in this project is to fit growth curves to data we have about dinosaurs. 
-The data we have are estimated ages and femur lengths, and also mass estimates. 
+My goal in this project is to fit growth curves to data we have about fossilized dinosaur bones and the ages of the dinosaur at the time of death. The utility of an accurate measurement to age model would mean scientists could use it to estimate approximate ages of dinosaur specimens without having to having take histological measurements first. 
+
+Here's a look at several dinosaur bone measurements (mm) to age. EAch facet is a separate genus of dinosaur, and each grouping is a separate bone (if there are multiple). The curve is a moving average curve using the geom_smooth function in R.
+
+
 ```{r}
 library(tidyverse)
 library(zoo)
 library(stringr)
+library(kableExtra)
+library(growthcurver)
 
 df1 <- readxl::read_excel('./Data//Dinosaur Age vs Femur Length.xlsx')
 
-names(df1) = c('dinosaur', 'age', 'femur_length')
+names(df1) = c('dataset', 'age', 'bone_dim_mm')
 
-skips <- which(df1$dinosaur %>% is.na & df1$age %>% is.na)
+skips <- which(df1$dataset %>% is.na & df1$age %>% is.na)
 
 df1 <- df1[-skips,] # removing blank rows from the data set
 
-df1$dinosaur <- na.locf(df1$dinosaur) # filling na values with specimen
+df1$dataset <- na.locf(df1$dataset) # filling na values with specimen
 
-df1 <- df1 %>% mutate(genus = str_extract(dinosaur, "^[^\\s]+"))
+df1 <- df1 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
 
 
 
 df2 <- readxl::read_excel('./Data/Dinosaur Age vs Mass.xlsx')
 
-names(df2) = c('dinosaur', 'age', 'mass')
+names(df2) = c('dataset', 'age', 'mass')
 
-skips <- which(df2$dinosaur %>% is.na & df2$age %>% is.na)
+skips <- which(df2$dataset %>% is.na & df2$age %>% is.na)
 
 df2 <- df2[-skips,] # removing blank rows from the data set
 
-df2$dinosaur <- na.locf(df2$dinosaur) # filling na values with dinosaur
+df2$dataset <- na.locf(df2$dataset) # filling na values with dataset
 
-df2 <- df2 %>% mutate(genus = str_extract(dinosaur, "^[^\\s]+"))
+df2 <- df2 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
 ```
-
-### Femur Length versus age
+As you can see, there are  a wide variety of "shapes" to the growth curves of different dinosaurs.
+### Bone Measurement versus Age
 ```{r}
 df1 %>% #filter(genus != 'janenschia') %>% 
-ggplot(aes(x = age, y = femur_length, color = genus, group = dinosaur)) +
-  geom_line() +
-  #geom_smooth(se = FALSE) +
+ggplot(aes(x = age, y = bone_dim_cm, color = genus, group = dataset)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
   facet_wrap(~genus, scales = 'free')
 ```
 
 ### Estimated Mass versus age
 ```{r}
 df2 %>%# filter(genus != 'Janenschia') %>% 
-  ggplot(aes(x = age, y = mass, color = genus, group = dinosaur)) +
+  ggplot(aes(x = age, y = mass, color = genus, group = dataset)) +
   geom_line() +
   #geom_smooth(se = FALSE) +
   facet_wrap(~genus, scales = 'free')
 ```
 
-However, growth curves should have a stage of minimum growth and a tapering off.
-```{r}
-
-T.rex <- filter(df2, dinosaur =='Tyrannosaurus rex')
-
-fit <- nls(data = T.rex, mass ~ a / (1 + exp(-b*(age-c))), start = list(a = 2000, b = .3, c = 2))
-
-
-```
 

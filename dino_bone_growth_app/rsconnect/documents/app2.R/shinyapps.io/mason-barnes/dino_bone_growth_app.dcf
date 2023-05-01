@@ -1,0 +1,14 @@
+name: dino_bone_growth_app
+title: dino_bone_growth_app
+username:
+account: mason-barnes
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8843452
+bundleId: 7157443
+url: https://mason-barnes.shinyapps.io/dino_bone_growth_app/
+when: 1682905069.63993
+lastSyncTime: 1682905069.63996
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: 00002c.png|app.R|app3.R
