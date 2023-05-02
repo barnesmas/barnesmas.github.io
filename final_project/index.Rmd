@@ -10,13 +10,15 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Dinosaur Growth Curves
 
-My goal in this project is to fit growth curves to data we have about fossilized dinosaur bones and the corresponding ages of the dinosaur at the time of death. I got the data from an article by Nathan P. Pyhrvold called [Revisiting the Estimation of Dinosaur Growth Rates.](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0081917) Which is itself a reevaluation of many other data sets about dinosaur bones from a myriad of other sources. I intend to replicate some of what Pyhrvold did in creating models of growth and age, but using R.
+My goal in this project is to fit growth curves to data we have about fossilized dinosaur bones and the corresponding ages of the dinosaur they belonged to at the time of death. I retrieved my data from an article by Nathan P. Pyhrvold called [Revisiting the Estimation of Dinosaur Growth Rates.](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0081917) Which is itself a reevaluation of growth models of many data sets about dinosaur bones from a myriad of other sources. I intend to do something similar to what Pyhrvold did in creating models of growth and age.
 
-One utility of an accurate measurement to age model would mean scientists could use it to estimate approximate ages of dinosaur specimens without having to having take histological measurements first. (aka cut a slice out of the bone)
+One utility of an accurate bone measurement-to-age model is that paleontologists could use it to estimate approximate ages of dinosaur specimens without having to having take histological measurements first. (aka cut a slice out of the bone)
 
 Here's a look at the data I have on different dinosaur datasets.
 
-Dinosaurs of the same kind with mulitpe data sets represent different bone measures, humerus, tibia, etc.
+*Dinosaur species with multiple data sets represent different bone measures, humerus, tibia, etc. or different interpretations of the same measurements.*
+
+##### 
 
 ```{r}
 library(tidyverse)
@@ -24,6 +26,7 @@ library(zoo)
 library(stringr)
 library(kableExtra)
 library(growthcurver)
+library(ggforce)
 
 df1 <- readxl::read_excel('./Data//Dinosaur Age vs Femur Length.xlsx')
 
@@ -51,12 +54,15 @@ df2$dataset <- na.locf(df2$dataset) # filling na values with dataset
 
 df2 <- df2 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
 
-df1 %>% kable() %>% kable_classic
+df1 %>% kable() %>% kable_classic() %>% 
+  scroll_box(height = '200px')
 ```
 
 Here's a look at graphs of several dinosaur bone measurements in milimeters, and the corresponding age. Each facet is a separate genus of dinosaur, and each grouping is a separate bone (if there are multiple). The curve is a moving average curve using the geom_smooth function in R.
 
-### Bone Measurement versus Age
+### 
+
+###  Age versus Bone Measurement 
 
 ```{r}
 df1 %>% #filter(genus != 'janenschia') %>% 
@@ -64,23 +70,37 @@ ggplot(aes(y = age, x = bone_dim_mm, color = genus, group = dataset)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   facet_wrap(~genus, scales = 'free') +
-  labs(x = 'Bone Dimension', y = 'Age (Years)')
+  labs(x = 'Bone Dimension (mm)', y = 'Age (Years)')
 ```
 
-As you can see, there are a wide variety of "shapes" to the growth curves of different dinosaurs, and the default geom_smooth() command isn't doing the best job of modeling. For example, So what "shape" should we use to estimate dinosaur age? Instead of picking just one, I created a shiny app that allows the user to pick one of several and compare their performance in each dinosaur data set.
+As you can see, there are a wide variety of "shapes" to the growth curves of different dinosaurs, and the default geom_smooth() command isn't doing the best job of modeling. For example, one of the T-rex curves has a 'hump', which means growth goes backwards for a little bit as it got older.
+
+So what "shape" should we use to estimate dinosaur age? Instead of picking just one, I created a shiny app that allows the user to pick one of several and compare their performance in each dinosaur data set.
 
 ## [Click Here](https://mason-barnes.shinyapps.io/dino_bone_growth_app/)
 
-The models I used for my models were either glm or nls models. The glm models I used were a simple linear, or degree 2, 3, polynomial. Here's an example of the code I used:
+The models I used for my models were either glm or nls models. The glm models I used were a simple linear, or degree 2 or 3, polynomial. The nls models use gradient descent algorithm to locate the "least square error" parameters for a custom curve. Here's some examples of the code I used to create these models.
 
-```{r}
+```{r, echo = TRUE, eval = FALSE}
+
+# linear and quadratic models: 
+
 model.linear <- glm(data = df1, formula = age ~ bone_dimension)
 
-model.quadratic <- 
-  
-model.cubic <- 
-  
+model.quad <- glm(data = df1, formula = age ~ poly(bone_dimension, 2))
 
+# exponential growth model
+
+a = .5 # starting estimate for a
+b = .1 # starting estimate for b
+model.exp <- nls(age ~ a * exp(b * bone_dimension), data = df1, start = list(a=a, b=b))
+
+# gompertz model
+
+c = 1 # gestimate for rowth rate
+b = median(df1$age) # starting estimate for inflexion point
+a = max(df1$bone_dimension) +1 # starting estimate for vertical assymptote.
+model.gompertz <- nls(age ~ 1/c * (b - log(log(a/(bone_dimension)))), data = df1, start = list(a =a, b =b, c=c), model = TRUE)
 
 ```
 
@@ -93,13 +113,13 @@ df2 %>%# filter(genus != 'Janenschia') %>%
   ggplot(aes(x = age, y = mass, color = genus, group = dataset)) +
   geom_point() +
   geom_smooth(se = FALSE) +
-  facet_wrap(~genus, scales = 'free') +
+  facet_wrap_paginate(~genus*dataset, scales = 'free') +
   labs(x = 'Age (Years)', y = 'Mass (kg)')
 ```
 
 ### Discussion:
 
-If I were to do this project again, I would use data on currently extant organisms that we have bone data on, and use that to inform me what age prediction models worked best for them.
+If I were to do this project again, I would also use data on currently extant organisms that we have lots of bone data on, and use that to inform me what age prediction models worked best for them, might help me decide what models work best for these extinct animals as well.
 
 I would also see if I could use data from several bones for the dinosaurs that had measurements on two or more bones, to see if I could get a more accurate measurement. I would also add error bounds to my estimations.
 
@@ -107,4 +127,6 @@ I also might look into evaluating my assumptions about error. My nls models were
 
 ### Conclusion:
 
-I've learned that estimating growth curves for extinct animals is a very intensive process requiring many educated assumptions. Models of multiple types give very similar root mean square errors.
+I feel like I've barely scratched the surface of all that goes into estimating growth curves for extinct animals. It's a very intensive process requiring many educated assumptions. With fossil data so limited, models of multiple types give very similar mean square errors.
+
+The main thing I learned about R from this project was how to use non linear least squares models (nls), and how to build my own shiny app. I hope to be able to continue to build on these skills for the future.

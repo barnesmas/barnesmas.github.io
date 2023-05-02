@@ -1,0 +1,68 @@
+---
+title: "test 2"
+author: "Mason Barnes"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+## R Markdown
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(zoo)
+library(stringr)
+library(kableExtra)
+library(growthcurver)
+library(ggforce)
+library(htmltools)
+
+df1 <- readxl::read_excel('./Data//Dinosaur Age vs Femur Length.xlsx')
+
+names(df1) = c('dataset', 'age', 'bone_dim_mm')
+
+skips <- which(df1$dataset %>% is.na & df1$age %>% is.na)
+
+df1 <- df1[-skips,] # removing blank rows from the data set
+
+df1$dataset <- na.locf(df1$dataset) # filling na values with specimen
+
+df1 <- df1 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
+
+
+
+df2 <- readxl::read_excel('./Data/Dinosaur Age vs Mass.xlsx')
+
+names(df2) = c('dataset', 'age', 'mass')
+
+skips <- which(df2$dataset %>% is.na & df2$age %>% is.na)
+
+df2 <- df2[-skips,] # removing blank rows from the data set
+
+df2$dataset <- na.locf(df2$dataset) # filling na values with dataset
+
+df2 <- df2 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
+
+library(gridExtra)
+library(grid)
+library(ggpubr)
+p <- ggplot(df1, aes(y = age, x = bone_dim_mm, color = genus, group = dataset)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_wrap(~dataset, ncol =3, nrow=11) +
+  labs(x = "Bone Dimension (mm)", y = "Age (Years)")
+
+ggsave(plot = p, filename = 'bone age charts.png', width = 1600, height = 1200, units = "px")
+
+
+
+```
+
+```{r,  knitr::include_graphics("bone age charts.png"}
+
+```
+

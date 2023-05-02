@@ -1,0 +1,68 @@
+---
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(zoo)
+library(stringr)
+library(kableExtra)
+library(growthcurver)
+library(ggforce)
+library(htmltools)
+
+df1 <- readxl::read_excel('./Data//Dinosaur Age vs Femur Length.xlsx')
+
+names(df1) = c('dataset', 'age', 'bone_dim_mm')
+
+skips <- which(df1$dataset %>% is.na & df1$age %>% is.na)
+
+df1 <- df1[-skips,] # removing blank rows from the data set
+
+df1$dataset <- na.locf(df1$dataset) # filling na values with specimen
+
+df1 <- df1 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
+
+
+
+df2 <- readxl::read_excel('./Data/Dinosaur Age vs Mass.xlsx')
+
+names(df2) = c('dataset', 'age', 'mass')
+
+skips <- which(df2$dataset %>% is.na & df2$age %>% is.na)
+
+df2 <- df2[-skips,] # removing blank rows from the data set
+
+df2$dataset <- na.locf(df2$dataset) # filling na values with dataset
+
+df2 <- df2 %>% mutate(genus = str_extract(dataset, "^[^\\s]+"))
+
+library(gridExtra)
+library(grid)
+ggplot(df1, aes(y = age, x = bone_dim_mm, color = genus, group = dataset)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  facet_grid_paginate(~dataset*genus, scales = 'free', ncol = 4) +
+  labs(x = 'Bone Dimension (mm)', y = 'Age (Years)')
+# ggsave(plot = p, 'bone vs age plots.jpeg', width =20, height = 40, units='cm', limitsize = FALSE)
+
+# put each facet in a separate div and add to scroll box
+# facet_divs <- lapply(names(p$facet$facet_params$layout), function(x) {
+#   div(p$facet$facet_params$grobs[[x]], style = "margin-bottom: 20px;")
+# })
+# scroll_box(div(facet_divs), height = "400px")
+
+# split facets into separate plots
+# plist <- lapply(seq_along(unique(df1$dataset)), function(i) {
+#   p_subset <- p %+% subset(df1, dataset == unique(df1$dataset)[i])
+#   ggplotGrob(p_subset)
+# })
+# grid.newpage()
+# grid.draw(plist[[1]])
+
+```
+
