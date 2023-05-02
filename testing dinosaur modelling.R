@@ -34,7 +34,7 @@ data_sets <- group_split(dinosaur, data_set, keep = FALSE)
   
   
   #### lets look at jsut  a singular data set for now, and model it with different models,  since that is what our shiny app is going to do
-df1 <- data_sets$tyrannosaurus_1
+df1 <- data_sets$janenschia
 # first lets plot the data
 
 df1 %>% ggplot(mapping = aes(x = bone_dimension, y = age)) +
@@ -79,8 +79,8 @@ df1 %>% ggplot(mapping = aes(x = bone_dimension, y = age)) +
 # exponential growth model
 
 a = .5
-b = .5
-model.exp <- nls(age ~ a * exp(b * bone_dimension), data = df1, start = list( a=a, b=b))
+b = .1
+model.exp <- nls(age ~ a * exp(b * bone_dimension), data = df1, start = list(a=a, b=b))
 
 df1 %>% ggplot(mapping = aes(x = bone_dimension, y = age)) +
   geom_point() +

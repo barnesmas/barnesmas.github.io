@@ -77,10 +77,12 @@ server <- function(input, output) {
       glm(data = dinosaur_filtered(),
           formula = age ~ poly(bone_dimension, 3))
     } else if (input$method == "Exponential") {
+      a = .5
+      b=.1
       nls(
         age ~ a * exp(b * bone_dimension),
         data = dinosaur_filtered(),
-        start = list(a = 1, b = 1),
+        start = list(a = a, b = b),
         model = TRUE
       )
     } else if (input$method == "Logarithmic") {
